@@ -49,8 +49,8 @@
 submission/
 ├── 张三/
 │   ├── day-1/
-│   │   ├── homework-1.md
-│   │   └── code/
+│   │   ├── README.md
+│   │   └── ...
 │   └── README.md
 └── 李四/
     └── day-1/
