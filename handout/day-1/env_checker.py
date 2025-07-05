@@ -1,4 +1,5 @@
 import os
+import time
 
 # 检查当前 conda 环境和 Python 解释器路径
 print("=== 环境信息检查 ===")
@@ -24,7 +25,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 # 加载 Qwen3-8B 模型和分词器
 print("=== 模型加载 ===")
 print("正在加载 Qwen3-8B 模型...")
-model = AutoModelForCausalLM.from_pretrained("/remote-home1/share/models/Qwen3-8B").cuda()
+model = AutoModelForCausalLM.from_pretrained("/remote-home1/share/models/Qwen3-8B").half().cuda().eval()
 print("正在加载分词器...")
 tokenizer = AutoTokenizer.from_pretrained("/remote-home1/share/models/Qwen3-8B")
 print("模型和分词器加载完成！")
@@ -53,6 +54,7 @@ print()
 # 将文本转换为模型输入格式并进行推理
 inputs = tokenizer(text, return_tensors="pt").to(model.device)
 print("开始生成回复...")
+start_time = time.time()
 outputs = model.generate(
     **inputs, 
     max_new_tokens=1024,  # 最大生成token数
@@ -61,10 +63,16 @@ outputs = model.generate(
     top_p=0.8,  # 核采样参数，保留累积概率前80%的token
     pad_token_id=tokenizer.eos_token_id  # 设置填充token
 )
+end_time = time.time()
+inference_time = end_time - start_time
 
 # 解码生成结果（只显示新生成的部分，不包括输入）
 response = tokenizer.decode(outputs[0][inputs.input_ids.shape[-1]:], skip_special_tokens=True)
-print("AI回复（普通模式）:", response)
+print("AI回复（普通模式）:")
+print("=" * 60)
+print(response)
+print("=" * 60)
+print(f"推理耗时: {inference_time:.2f} 秒")
 print("\n" + "="*50 + "\n")
 
 
@@ -84,6 +92,7 @@ print()
 # 将文本转换为模型输入格式并进行推理
 inputs = tokenizer(text, return_tensors="pt").to(model.device)
 print("开始生成回复（思维链模式）...")
+start_time_thinking = time.time()
 outputs = model.generate(
     **inputs, 
     max_new_tokens=1024,  # 最大生成token数
@@ -92,7 +101,15 @@ outputs = model.generate(
     top_p=0.8,  # 核采样参数
     pad_token_id=tokenizer.eos_token_id  # 设置填充token
 )
+end_time_thinking = time.time()
+inference_time_thinking = end_time_thinking - start_time_thinking
 
 # 解码生成结果（包含思维过程和最终回答）
-response = tokenizer.decode(outputs[0][inputs.input_ids.shape[-1]:], skip_special_tokens=True)
-print("AI回复（思维链模式）:", response)
+response_thinking = tokenizer.decode(outputs[0][inputs.input_ids.shape[-1]:], skip_special_tokens=True)
+print("AI回复（思维链模式）:")
+print("=" * 60)
+print(response_thinking)
+print("=" * 60)
+print(f"推理耗时: {inference_time_thinking:.2f} 秒")
+
+print("\n=== 测试完成 ===")
