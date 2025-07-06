@@ -436,21 +436,69 @@ class SimpleLark:
             return filtered_records
         else:
             return self.get_records(table_name)
+        
+    def get_records_by_person(self, table_name: str = "default", person_name: str = "") -> List[Dict[str, Any]]:
+        """根据人员姓名查询记录（支持主讲和助教字段）
+        
+        Args:
+            table_name: 表格名称
+            person_name: 要查询的人员姓名
+            
+        Returns:
+            包含该人员的记录列表
+        """
+        if not person_name:
+            return []
+        
+        # 先获取所有记录，然后在客户端进行筛选
+        all_records = self.get_records(table_name)
+        filtered_records = []
+        # print(all_records)
 
+        for record in all_records:
+            fields = record.get("fields", {})
+            # print(fields)
+            # 检查主讲字段
+            lecturer = fields.get("主讲", "")
+            # print(lecturer)
+            # 检查助教字段
+            assistant = fields.get("助教", "")
+            # print(assistant)
+            # 处理复杂字段格式（可能是列表或字典）
+            lecturer_str = self._extract_name_from_field(lecturer)
+            assistant_str = self._extract_name_from_field(assistant)
+            
+            # 如果主讲或助教中包含指定姓名，则包含此记录
+            if person_name in lecturer_str or person_name in assistant_str:
+                filtered_records.append(record)
+        
+        return filtered_records
+    
+    def _extract_name_from_field(self, field_value) -> str:
+        """从字段值中提取姓名字符串"""
+        if isinstance(field_value, list) and field_value:
+            if isinstance(field_value[0], dict) and 'name' in field_value[0]:
+                # 处理飞书用户字段格式：[{"name": "姓名", "id": "xxx"}]
+                return ", ".join([item.get('name', '') for item in field_value])
+            else:
+                return ", ".join([str(item) for item in field_value])
+        else:
+            return str(field_value)
 
 # 使用示例
 if __name__ == "__main__":
     # 从环境变量获取配置信息
-    app_id = os.environ.get("FEISHU_APP_ID", "你的 APP_ID")
-    app_secret = os.environ.get("FEISHU_APP_SECRET", "你的 APP_SECRET")
+    app_id = os.environ.get("FEISHU_APP_ID", "cli_a8e34f36d4f8100c")
+    print(app_id)
+    app_secret = os.environ.get("FEISHU_APP_SECRET", "GoSOTafkhBqNODefn4xnVbFQufyYQuO4")
     bitable_url = "https://fudan-nlp.feishu.cn/base/KH8obWHvqam2Y4sXGGuct2HFnEb?table=tbljlS1fS0UepxBn&view=vewCig26Kk"
     
     # 检查是否提供了真实凭据
     if app_id == "your_app_id" or app_secret == "your_app_secret":
         print("❌ 错误：请设置环境变量 FEISHU_APP_ID 和 FEISHU_APP_SECRET")
         print("\n设置方法：")
-        print("export FEISHU_APP_ID='你的 APP_ID'")
-        print("export FEISHU_APP_SECRET='你的 APP_SECRET'")
+        print("export FEISHU_APP_ID='cli_a8e34f36d4f8100c'")
+        print("export FEISHU_APP_SECRET='GoSOTafkhBqNODefn4xnVbFQufyYQuO4'")
         print("\n或者直接在代码中替换 app_id 和 app_secret 的值")
         exit(1)
     
@@ -506,6 +554,7 @@ if __name__ == "__main__":
     field_value = "常见框架介绍( llamafactory, verl, vllm)"  # 替换为你要筛选的值
     
     try:
+        
         filtered_records = lark.get_filtered_records("default", field_name, field_value)
         print(f"筛选条件: {field_name} = {field_value}")
         print(f"✅ 筛选结果: {len(filtered_records)} 条记录")
@@ -529,6 +578,39 @@ if __name__ == "__main__":
                 
     except Exception as e:
         print(f"❌ 筛选记录失败: {str(e)}")
+    
+    print("\n" + "=" * 50)
+
+
+    # 3. 查询包含"刘智耿"的记录
+    print("\n3. 查询包含'刘智耿'的记录:")
+    try:
+        liu_records = lark.get_records_by_person("default", "刘智耿")
+        print(f"查询条件: 主讲或助教包含 '刘智耿'")
+        print(f"✅ 查询结果: {len(liu_records)} 条记录")
+        
+        if liu_records:
+            for i, record in enumerate(liu_records):
+                print(f"\n记录 {i+1}:")
+                fields = record.get("fields", {})
+                # 显示所有关键字段
+                for field_name_item in ["主讲", "助教", "日期", "课程"]:
+                    if field_name_item in fields:
+                        field_value_item = fields[field_name_item]
+                        # 简化显示复杂字段
+                        if isinstance(field_value_item, list) and field_value_item:
+                            if isinstance(field_value_item[0], dict) and 'name' in field_value_item[0]:
+                                display_value = ", ".join([item.get('name', '') for item in field_value_item])
+                            else:
+                                display_value = str(field_value_item)
+                        else:
+                            display_value = str(field_value_item)
+                        print(f"  {field_name_item}: {display_value}")
+        else:
+            print("  📝 未找到包含'刘智耿'的记录")
+                
+    except Exception as e:
+        print(f"❌ 查询记录失败: {str(e)}")
     
     print("\n" + "=" * 50)
     print("Demo 完成")
