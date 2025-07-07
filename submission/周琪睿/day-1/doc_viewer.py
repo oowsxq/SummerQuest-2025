@@ -442,18 +442,28 @@ class SimpleLark:
         else:
             return self.get_records(table_name)
 
+# ... 你文件前面所有的 class 定义保持不变 ...
+
 if __name__ == "__main__":
+    # 在文件顶部需要 'import sys', 'import os', 'import json'
+
+    # 1. 初始化和数据获取 (这部分逻辑不变)
     app_id = os.environ.get("FEISHU_APP_ID", "cli_a8e1d44dda39d00c")
     app_secret = os.environ.get("FEISHU_APP_SECRET", "v1IcAq5A28kSeKahUgGb1dImLpOD3BiV")
     bitable_url = "https://fudan-nlp.feishu.cn/base/KH8obWHvqam2Y4sXGGuct2HFnEb?table=tbljlS1fS0UepxBn&view=vewCig26Kk"
 
     try:
+        # 错误和提示信息输出到 stderr，不污染重定向的数据流
+        original_stdout = sys.stdout
+        sys.stdout = sys.stderr
         lark = SimpleLark(app_id, app_secret, bitable_url)
         all_records = lark.get_records()
+        sys.stdout = original_stdout # 恢复 stdout
     except Exception as e:
         print(f"初始化或获取数据时发生错误: {e}", file=sys.stderr)
         exit(1)
 
+    # 2. 查找并处理数据
     found_count = 0
     for record in all_records:
         fields = record.get("fields", {})
@@ -471,9 +481,20 @@ if __name__ == "__main__":
 
         if "刘智耿" in lecturer_names or "刘智耿" in ta_names:
             found_count += 1
-            print(json.dumps(record, indent=2, ensure_ascii=False))
+            
+            # --- 这是最关键的修改 ---
+            # a. 将找到的记录转换为格式化的 JSON 字符串
+            json_string = json.dumps(record, indent=2, ensure_ascii=False) + "\n"
+            
+            # b. 将这个字符串编码为 UTF-8 字节流
+            utf8_bytes = json_string.encode('utf-8')
+            
+            # c. 将原始的字节流直接写入标准输出的二进制缓冲区 (buffer)
+            sys.stdout.buffer.write(utf8_bytes)
+            # --- 关键修改结束 ---
 
+    # 3. 输出总结信息到 stderr
     if found_count > 0:
-        print(f"\n查询完成，共找到 {found_count} 条记录。", file=sys.stderr)
+        print(f"\n查询完成，共找到 {found_count} 条符合条件的记录。", file=sys.stderr)
     else:
-        print(f"\n查询完成，未找到符合条件的记录。", file=sys.stderr)
+        print("\n查询完成，未找到符合条件的记录。", file=sys.stderr)
