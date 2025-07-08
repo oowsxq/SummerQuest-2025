@@ -1,5 +1,4 @@
-# 暑期集训-2025-homework-1
-# SummerQuest-2025 Day-1 自动化批改助教脚本
+# SummerQuest-2025 Day-1-ljx
 
 这是一个用于自动化批改 "SummerQuest-2025" Day-1 作业的 Python 脚本。因为我没有会员，该脚本目前使用**智谱AI (Zhipu AI)** 的 `glm-4` 模型，效果不太好。
 
@@ -9,14 +8,14 @@
 
 ### 2. 设置环境变量 ZHIPU_API_KEY(export ZHIPU_API_KEY='08ddb884374c4e28ac573d7afd6c91bb.XYRJk7eaTandlzUB')  
 
-### 3. 在命令行中运行: python TA.py <path_to_submission_directory>(python TA.py ../../submission)
+### 3. 在命令行中运行: python TA.py <path_to_submission_directory>(python TA.py ../../../submission)
 
 
 
 ## 目录结构
 
 ```
-day-1/
+day-1/李佳羲
 ├── TA.py                 # 主执行脚本
 ├── prompts/
 │   └── day-1.md          # 定义批改逻辑的Prompt模板

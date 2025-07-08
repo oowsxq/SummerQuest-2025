@@ -1,10 +1,3 @@
-# 使用方法:
-# 1. 确保已安装 zhipuai 库 (pip install zhipuai)
-# 2. 设置环境变量 ZHIPU_API_KEY。
-#    export ZHIPU_API_KEY='08ddb884374c4e28ac573d7afd6c91bb.XYRJk7eaTandlzUB'
-# 3. 在命令行中运行: python TA.py <path_to_submission_directory>
-#    例如: python TA.py ../../submission
-
 # ==============================================================================
 # 第一部分: 配置与常量区
 # ==============================================================================
@@ -86,9 +79,6 @@ class TAParser:
                 submission_data[key_name] = error_msg
                 all_files_found = False
         
-        # 可选：如果希望任何一个文件缺失都不进行API调用，可以在这里返回
-        # if not all_files_found:
-        #     return None
 
         return template_content.format(**submission_data)
 
@@ -139,7 +129,7 @@ if __name__ == "__main__":
         print(f"错误: 目录不存在 -> {submissions_dir}")
         sys.exit(1)
 
-    # 2. 初始化 API 客户端 (只初始化一次)
+    # 2. 初始化 API 客户端
     if not ZHIPU_API_KEY:
         print("错误: 找不到环境变量 ZHIPU_API_KEY。请先设置。")
         sys.exit(1)
@@ -164,7 +154,6 @@ if __name__ == "__main__":
     graded_count = 0
     
     for student_name in all_students:
-        # **核心逻辑：跳过黑名单中的学生**
         if student_name in SKIP_LIST:
             print(f"\n{'='*20} 跳过: {student_name} (在忽略名单中) {'='*20}")
             continue
