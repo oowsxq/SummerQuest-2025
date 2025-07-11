@@ -1,11 +1,13 @@
 import json
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from tqdm import tqdm
+import torch
+import random
 
 # 加载模型
 model_name = "/inspire/hdd/project/embodied-multimodality/public/syfei/baseline-models/DeepSeek-R1-Distill-Qwen-7B"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name).to('cuda')
 
 # 定义更具体的提示词模板
 SEARCH_PROMPT_TEMPLATES = [
@@ -30,7 +32,7 @@ def generate_search_question(category):
     prompt_template = random.choice(SEARCH_PROMPT_TEMPLATES)
     prompt = prompt_template.format(category=category)
     
-    input_ids = tokenizer.encode(prompt, return_tensors='pt')
+    input_ids = tokenizer.encode(prompt, return_tensors='pt').to('cuda')
     output = model.generate(
         input_ids,
         max_length=100,
