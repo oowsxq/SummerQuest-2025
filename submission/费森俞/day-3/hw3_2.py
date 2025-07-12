@@ -14,8 +14,8 @@ tokenizer = AutoTokenizer.from_pretrained("./tokenizer_with_special_tokens", tru
 
 # vLLM 引擎配置
 llm = vllm.LLM(
-    model="/remote-home1/share/models/Qwen3-8B",
-    gpu_memory_utilization=0.8, 
+    model="/inspire/hdd/project/embodied-multimodality/public/syfei/baseline-models/Qwen3-8B",
+    gpu_memory_utilization=0.3, 
     trust_remote_code=True,
     enforce_eager=True,
     max_model_len=4096,
@@ -89,6 +89,7 @@ def generate_prompt(query: str) -> str:
         "Please directly modify the code and merge the modified snippets. Use edit mode for processing. Output should be: "
         "<|EDIT|>\n"
         "I will use edit mode to fix the code {\"name\": \"editor\", \"arguments\": {\"original_code\": \"<original_code_here>\", \"modified_code\": \"<modified_code_here>\"}}"
+        "Make sure there will be either <|AGENT|> or <|EDIT|> in output. And thinking should be as short as possible, but cannot be zero."
     )
 
     messages = [

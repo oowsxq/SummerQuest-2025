@@ -2,7 +2,7 @@ from transformers import AutoTokenizer
 import json, os
 
 # 模型和文件路径
-MODEL_PATH = "/remote-home1/share/models/Qwen3-8B"
+MODEL_PATH = "/inspire/hdd/project/embodied-multimodality/public/syfei/baseline-models/Qwen3-8B"
 INPUT_JSON = "query_and_output.json"
 OUTPUT_JSON = "hw3_1.json"
 TOKENIZER_SAVE_PATH = "./tokenizer_with_special_tokens"  # 保存tokenizer的本地路径
@@ -14,10 +14,10 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
 new_tokens = ["<|AGENT|>", "<|EDIT|>"]
 
 # 3. 添加特殊 tokens
-tokenizer.add_special_tokens({'additional_special_token': new_tokens})
+tokenizer.add_special_tokens({'additional_special_tokens': new_tokens})
 
 # 4. 保存修改后的tokenizer到本地
-tokenizer.save_pretrained('./tokenizer_with_special_tokens')
+tokenizer.save_pretrained(TOKENIZER_SAVE_PATH)
 
 # 5. 读取原始的 Query&Output
 with open(INPUT_JSON, "r", encoding="utf-8") as f:
@@ -38,9 +38,9 @@ for item in tasks:
     # 合并字段
     merged_text = item["Query"].strip() + "\n" + item["Output"].strip()
     # 编码并获取 token IDs
-    ids = [] # TODO
+    ids = tokenizer.encode(merged_text, add_special_tokens=True) # TODO
     # 解码验证
-    decoded = [] # TODO
+    decoded = tokenizer.decode(ids) # TODO
     records["tasks"].append({
         "text": merged_text,
         "token_ids": ids,
